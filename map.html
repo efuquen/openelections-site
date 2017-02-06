@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Election District Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      #map {
+        height: 100%;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: 40.7128, lng: -73.93 },
+          zoom: 11,
+        });
+
+        map.data.loadGeoJson(
+          'https://data.cityofnewyork.us/api/geospatial/h2n3-98hq?method=export&format=GeoJSON');
+
+        var infowindow = new google.maps.InfoWindow({
+          pixelOffset: new google.maps.Size(10, -10),
+        });
+
+        map.data.addListener('click', function (event) {
+          var electDist = event.feature.getProperty('elect_dist');
+
+          var content = 'Election District: ' + electDist + '<br>';
+          infowindow.setContent(content);
+          infowindow.setPosition(event.latLng);
+          infowindow.open(map);
+        });
+
+        var distToVotes = {};
+        var voteRequest = new Request('/precincts');
+        fetch(voteRequest).then(function (response) {
+          return response.json();
+        }).then(function (response) {
+          for (var i in response) {
+            var precinctParts = response[i].precinct.split('/');
+            var key = precinctParts[1] + precinctParts[0];
+            distToVotes[key] = response[i];
+          }
+
+          map.data.setStyle(function (feature) {
+            var electDist = feature.getProperty('elect_dist');
+            var color = 'grey';
+            if (electDist in distToVotes) {
+              var distVotes = distToVotes[electDist].votes;
+
+              //TODO: Write code to choose candidate with
+              //most votes in this precinct.
+            }
+
+            return { fillColor: color, fillOpacity: 0.4, strokeWeight: 1 };
+          });
+        });
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAj3qWjXlcsvFcZTlMmNqH22yQFRYNoLgc&callback=initMap"
+    async defer></script>
+  </body>
+</html>

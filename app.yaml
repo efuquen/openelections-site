@@ -1,4 +1,4 @@
-application: corded-imagery-157221
+application: scripted-nyc-openelections
 version: 1
 runtime: python27
 api_version: 1
@@ -12,6 +12,10 @@ handlers:
 - url: /import
   static_files: import.html
   upload: import\.html
+
+- url: /map
+  static_files: map.html
+  upload: map\.html
 
 - url: .*
   script: main.app
